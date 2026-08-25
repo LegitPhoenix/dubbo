@@ -164,7 +164,11 @@ public class PageServlet extends HttpServlet {
                                 page.getRows());
                     } else {
                         if (page.getRows().size() > 0 && page.getRows().get(0).size() > 0) {
-                            writer.println(page.getRows().get(0).get(0));
+                            String output = page.getRows().get(0).get(0);
+                            if (output != null) {
+                                output = output.replace("\r", "").replace("\n", " ");
+                            }
+                            writer.println(output);
                         }
                     }
                 }
