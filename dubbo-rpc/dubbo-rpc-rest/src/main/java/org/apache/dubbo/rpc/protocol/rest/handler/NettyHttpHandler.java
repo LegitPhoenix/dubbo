@@ -80,17 +80,16 @@ public class NettyHttpHandler implements HttpHandler<NettyRequestFacade, NettyHt
             doHandler(nettyHttpRequest, nettyHttpResponse, requestFacade);
         } catch (PathNoFoundException pathNoFoundException) {
             logger.error("", pathNoFoundException.getMessage(), "", "dubbo rest protocol provider path   no found ,raw request is :" + nettyHttpRequest, pathNoFoundException);
-            nettyHttpResponse.sendError(404, pathNoFoundException.getMessage());
+            nettyHttpResponse.sendError(404, "Resource not found");
         } catch (ParamParseException paramParseException) {
             logger.error("", paramParseException.getMessage(), "", "dubbo rest protocol provider param parse error ,and raw request is :" + nettyHttpRequest, paramParseException);
-            nettyHttpResponse.sendError(400, paramParseException.getMessage());
+            nettyHttpResponse.sendError(400, "Bad request");
         } catch (MediaTypeUnSupportException contentTypeException) {
             logger.error("", contentTypeException.getMessage(), "", "dubbo rest protocol provider content-type un support" + nettyHttpRequest, contentTypeException);
-            nettyHttpResponse.sendError(415, contentTypeException.getMessage());
+            nettyHttpResponse.sendError(415, "Unsupported media type");
         } catch (Throwable throwable) {
             logger.error("", throwable.getMessage(), "", "dubbo rest protocol provider error ,and raw request is  " + nettyHttpRequest, throwable);
-            nettyHttpResponse.sendError(500, "dubbo rest invoke Internal error, message is " + throwable.getMessage()
-                + " , stacktrace is: " + stackTraceToString(throwable));
+            nettyHttpResponse.sendError(500, "Internal server error");
         }
 
 
