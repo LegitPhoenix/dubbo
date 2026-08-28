@@ -312,7 +312,7 @@ public abstract class AbstractRegistry implements Registry {
         try (InputStream in = Files.newInputStream(file.toPath())) {
             properties.load(in);
             if (logger.isInfoEnabled()) {
-                logger.info("Loaded registry cache file " + file);
+                logger.info("Loaded registry cache file " + file.getName());
             }
         } catch (IOException e) {
             // 1-9 failed to read / save registry cache file.
