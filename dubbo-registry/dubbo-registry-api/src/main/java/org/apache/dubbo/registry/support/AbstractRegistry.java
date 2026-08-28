@@ -134,6 +134,21 @@ public abstract class AbstractRegistry implements Registry {
 
             if (ConfigUtils.isNotEmpty(filename)) {
                 file = new File(filename);
+                try {
+                    String canonicalFilePath = file.getCanonicalPath();
+                    String baseDir = System.getProperty(USER_HOME) + DUBBO_REGISTRY;
+                    String canonicalBaseDir = new File(baseDir).getCanonicalPath();
+                    
+                    if (!canonicalFilePath.startsWith(canonicalBaseDir)) {
+                        throw new IllegalArgumentException(
+                            "Invalid registry cache file " + file + 
+                            ", cause: Path traversal detected. File must be within " + canonicalBaseDir);
+                    }
+                } catch (IOException e) {
+                    throw new IllegalArgumentException(
+                        "Invalid registry cache file " + file + 
+                        ", cause: Unable to validate file path", e);
+                }
                 if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
                     if (!file.getParentFile().mkdirs()) {
 
