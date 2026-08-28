@@ -80,6 +80,13 @@ public class CodeGenerator {
                 AdaptiveClassCodeGenerator codeGenerator = new AdaptiveClassCodeGenerator(it, value);
                 String code = codeGenerator.generate();
                 String file = p + File.separator + it.getName().replaceAll("\\.", Matcher.quoteReplacement(File.separator));
+                File targetFile = new File(file + "$Adaptive.java");
+                String canonicalTargetPath = targetFile.getCanonicalPath();
+                String canonicalBase = new File(p).getCanonicalPath();
+                if (!canonicalTargetPath.startsWith(canonicalBase + File.separator)) {
+                    log.error("Path traversal attempt detected for class: " + it.getName());
+                    return;
+                }
                 String dir = Paths.get(file).getParent().toString();
                 FileUtils.forceMkdir(new File(dir));
                 code = licensedStr + code + "\n";
@@ -98,6 +105,15 @@ public class CodeGenerator {
         URL r = Thread.currentThread().getContextClassLoader().getResource("");
         String targetClassPath = new File(r.getFile()).getAbsolutePath();
         String p = Paths.get(targetClassPath).getParent().getParent().toString() + File.separator + "src" + File.separator + "main" + File.separator + "java";
+        try {
+            File baseDir = new File(p);
+            String canonicalBasePath = baseDir.getCanonicalPath();
+            if (!canonicalBasePath.endsWith(File.separator + "src" + File.separator + "main" + File.separator + "java")) {
+                throw new IllegalArgumentException("Invalid base path: path traversal detected or unexpected directory structure");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to validate base path", e);
+        }
         execute(p, new SystemStreamLog());
     }
 
