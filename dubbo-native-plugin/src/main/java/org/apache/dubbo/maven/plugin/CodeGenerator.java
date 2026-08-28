@@ -84,6 +84,17 @@ public class CodeGenerator {
                 FileUtils.forceMkdir(new File(dir));
                 code = licensedStr + code + "\n";
                 File tmpFile = new File(file + "$Adaptive.java");
+                try {
+                    String canonicalFilePath = tmpFile.getCanonicalPath();
+                    String canonicalBase = new File(p).getCanonicalPath();
+                    if (!canonicalFilePath.startsWith(canonicalBase + File.separator) && !canonicalFilePath.equals(canonicalBase)) {
+                        log.warn("Security: Attempted path traversal detected. Skipping file: " + tmpFile);
+                        return;
+                    }
+                } catch (IOException ioEx) {
+                    log.error("Failed to canonicalize path for security check: " + tmpFile, ioEx);
+                    return;
+                }
                 FileUtils.write(tmpFile, code, Charset.defaultCharset());
                 log.info("Generate file:" + tmpFile);
             } catch (Throwable e) {
@@ -97,7 +108,15 @@ public class CodeGenerator {
     public static void main(String[] args) {
         URL r = Thread.currentThread().getContextClassLoader().getResource("");
         String targetClassPath = new File(r.getFile()).getAbsolutePath();
-        String p = Paths.get(targetClassPath).getParent().getParent().toString() + File.separator + "src" + File.separator + "main" + File.separator + "java";
+        String p;
+        try {
+            String basePath = Paths.get(targetClassPath).getParent().getParent().toString() + File.separator + "src" + File.separator + "main" + File.separator + "java";
+            File baseDir = new File(basePath);
+            String canonicalBase = baseDir.getCanonicalPath();
+            p = canonicalBase;
+        } catch (IOException ioEx) {
+            throw new RuntimeException("Failed to canonicalize base path for security validation", ioEx);
+        }
         execute(p, new SystemStreamLog());
     }
 
