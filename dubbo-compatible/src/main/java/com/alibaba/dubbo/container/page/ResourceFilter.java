@@ -121,6 +121,17 @@ public class ResourceFilter implements Filter {
             if (resource != null && resource.length() > 0) {
                 String path = resource + uri;
                 if (isFile(path)) {
+                    try {
+                        File resourceDir = new File(resource);
+                        String canonicalResourcePath = resourceDir.getCanonicalPath();
+                        File requestedFile = new File(path);
+                        String canonicalRequestedPath = requestedFile.getCanonicalPath();
+                        if (!canonicalRequestedPath.startsWith(canonicalResourcePath)) {
+                            continue;
+                        }
+                    } catch (IOException e) {
+                        continue;
+                    }
                     File file = new File(path);
                     if (file.exists()) {
                         return file.lastModified();
@@ -134,6 +145,19 @@ public class ResourceFilter implements Filter {
     private InputStream getInputStream(String uri) {
         for (String resource : resources) {
             String path = resource + uri;
+            if (isFile(path)) {
+                try {
+                    File resourceDir = new File(resource);
+                    String canonicalResourcePath = resourceDir.getCanonicalPath();
+                    File requestedFile = new File(path);
+                    String canonicalRequestedPath = requestedFile.getCanonicalPath();
+                    if (!canonicalRequestedPath.startsWith(canonicalResourcePath)) {
+                        continue;
+                    }
+                } catch (IOException e) {
+                    continue;
+                }
+            }
             try {
                 if (isFile(path)) {
                     return new FileInputStream(path);
