@@ -120,15 +120,25 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (localCacheEnabled && ConfigUtils.isNotEmpty(filename)) {
-            file = new File(filename);
-            if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
-                if (!file.getParentFile().mkdirs()) {
-                    throw new IllegalArgumentException("Invalid service store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+            try {
+                File baseDir = new File(System.getProperty(USER_HOME) + DUBBO_METADATA);
+                String basePath = baseDir.getCanonicalPath();
+                file = new File(filename);
+                String canonicalPath = file.getCanonicalPath();
+                if (!canonicalPath.startsWith(basePath + File.separator)) {
+                    throw new IllegalArgumentException("Invalid file path: path traversal detected in " + filename);
                 }
-            }
-            // if this file exists, firstly delete it.
-            if (!initialized.getAndSet(true) && file.exists()) {
-                file.delete();
+                if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
+                    if (!file.getParentFile().mkdirs()) {
+                        throw new IllegalArgumentException("Invalid service store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+                    }
+                }
+                // if this file exists, firstly delete it.
+                if (!initialized.getAndSet(true) && file.exists()) {
+                    file.delete();
+                }
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Invalid file path: " + filename, e);
             }
         }
         this.file = file;
