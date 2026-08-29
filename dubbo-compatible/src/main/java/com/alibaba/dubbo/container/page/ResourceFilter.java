@@ -122,8 +122,15 @@ public class ResourceFilter implements Filter {
                 String path = resource + uri;
                 if (isFile(path)) {
                     File file = new File(path);
-                    if (file.exists()) {
-                        return file.lastModified();
+                    File baseDir = new File(resource);
+                    try {
+                        String canonicalPath = file.getCanonicalPath();
+                        String canonicalBase = baseDir.getCanonicalPath();
+                        if (canonicalPath.startsWith(canonicalBase) && file.exists()) {
+                            return file.lastModified();
+                        }
+                    } catch (IOException e) {
+                        // Path traversal attempt or IO error, skip
                     }
                 }
             }
@@ -136,7 +143,19 @@ public class ResourceFilter implements Filter {
             String path = resource + uri;
             try {
                 if (isFile(path)) {
-                    return new FileInputStream(path);
+                    File file = new File(path);
+                    File baseDir = new File(resource);
+                    try {
+                        String canonicalPath = file.getCanonicalPath();
+                        String canonicalBase = baseDir.getCanonicalPath();
+                        if (!canonicalPath.startsWith(canonicalBase)) {
+                            continue; // Skip this resource, try next one
+                        }
+                        return new FileInputStream(file);
+                    } catch (IOException e) {
+                        // Path traversal attempt or IO error, continue to next resource
+                        continue;
+                    }
                 } else if (path.startsWith(CLASSPATH_PREFIX)) {
                     return Thread.currentThread().getContextClassLoader().getResourceAsStream(path.substring(CLASSPATH_PREFIX.length()));
                 } else {
