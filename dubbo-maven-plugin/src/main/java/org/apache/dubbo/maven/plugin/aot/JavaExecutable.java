@@ -40,9 +40,25 @@ public class JavaExecutable {
 	}
 
 	private File findInJavaHome(String javaHome) {
-		File bin = new File(new File(javaHome), "bin");
+		File javaHomeFile = new File(javaHome);
+		String canonicalJavaHome;
+		try {
+			canonicalJavaHome = javaHomeFile.getCanonicalPath();
+		}
+		catch (IOException ex) {
+			throw new IllegalStateException("Invalid java.home path: " + javaHome, ex);
+		}
+		Assert.assertTrue(javaHomeFile.exists() && javaHomeFile.isDirectory(), () -> "java.home does not point to a valid directory: " + javaHome);
+		File bin = new File(new File(canonicalJavaHome), "bin");
 		File command = new File(bin, "java.exe");
 		command = command.exists() ? command : new File(bin, "java");
+		try {
+			String canonicalCommand = command.getCanonicalPath();
+			Assert.assertTrue(canonicalCommand.startsWith(canonicalJavaHome + File.separator), () -> "Resolved java executable is outside java.home directory");
+		}
+		catch (IOException ex) {
+			throw new IllegalStateException("Unable to validate java executable path", ex);
+		}
 		Assert.assertTrue(command.exists(), () -> "Unable to find java in " + javaHome);
 		return command;
 	}
