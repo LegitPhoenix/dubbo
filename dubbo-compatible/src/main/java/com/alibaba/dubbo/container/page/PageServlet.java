@@ -157,7 +157,7 @@ public class PageServlet extends HttpServlet {
                             nav = nav.substring(0, 1).toUpperCase() + nav.substring(1);
                         }
                         if (!"index".equals(uri)) {
-                            nav = "<a href=\"/\">Home</a> &gt; " + nav;
+                            nav = "<a href=\"/\">Home</a> &gt; " + encodeHtml(nav);
                         }
                         writeMenu(request, writer, nav);
                         writeTable(writer, page.getTitle(), page.getColumns(),
@@ -179,7 +179,7 @@ public class PageServlet extends HttpServlet {
                     writer.println("<tbody>");
                     writer.println("    <tr>");
                     writer.println("        <td>");
-                    writer.println("            Not found " + uri + " page. Please goto <a href=\"/\">Home</a> page.");
+                    writer.println("            Not found " + encodeHtml(uri) + " page. Please goto <a href=\"/\">Home</a> page.");
                     writer.println("        </td>");
                     writer.println("    </tr>");
                     writer.println("</tbody>");
@@ -194,6 +194,17 @@ public class PageServlet extends HttpServlet {
             }
             writer.flush();
         }
+    }
+
+    private String encodeHtml(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;")
+                    .replace("'", "&#39;");
     }
 
     protected final void writeMenu(HttpServletRequest request, PrintWriter writer, String nav) {
