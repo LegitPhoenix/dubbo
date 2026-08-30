@@ -139,7 +139,7 @@ public class PageServlet extends HttpServlet {
                         writer.println("<tbody>");
                         writer.println("    <tr>");
                         writer.println("        <td>");
-                        writer.println("            " + msg.replace("<", "&lt;").replace(">", "&lt;").replace("\n", "<br/>"));
+                        writer.println("            " + StringEscapeUtils.escapeHtml4(msg).replace("\n", "<br/>"));
                         writer.println("        </td>");
                         writer.println("    </tr>");
                         writer.println("</tbody>");
