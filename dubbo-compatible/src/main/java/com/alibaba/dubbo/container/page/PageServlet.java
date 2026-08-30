@@ -146,7 +146,7 @@ public class PageServlet extends HttpServlet {
                         writer.println("</table>");
                         writer.println("<br/>");
                     } else {
-                        writer.println(msg);
+                        writer.println(msg.replace("<", "&lt;").replace(">", "&gt;"));
                     }
                 }
                 if (page != null) {
