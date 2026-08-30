@@ -179,14 +179,14 @@ public class PageServlet extends HttpServlet {
                     writer.println("<tbody>");
                     writer.println("    <tr>");
                     writer.println("        <td>");
-                    writer.println("            Not found " + uri + " page. Please goto <a href=\"/\">Home</a> page.");
+                    writer.println("            Not found " + htmlEncode(uri) + " page. Please goto <a href=\"/\">Home</a> page.");
                     writer.println("        </td>");
                     writer.println("    </tr>");
                     writer.println("</tbody>");
                     writer.println("</table>");
                     writer.println("<br/>");
                 } else {
-                    writer.println("Not found " + uri + " page.");
+                    writer.println("Not found " + htmlEncode(uri) + " page.");
                 }
             }
             if (isHtml) {
@@ -194,6 +194,17 @@ public class PageServlet extends HttpServlet {
             }
             writer.flush();
         }
+    }
+
+    private static String htmlEncode(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;")
+                    .replace("'", "&#x27;");
     }
 
     protected final void writeMenu(HttpServletRequest request, PrintWriter writer, String nav) {
