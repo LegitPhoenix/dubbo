@@ -312,6 +312,16 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 }
             }
             if (resolveFile != null && resolveFile.length() > 0) {
+                try {
+                    File resolveFileObj = new File(resolveFile);
+                    String canonicalPath = resolveFileObj.getCanonicalPath();
+                    String allowedBasePath = new File(System.getProperty("user.home")).getCanonicalPath();
+                    if (!canonicalPath.startsWith(allowedBasePath)) {
+                        throw new IllegalArgumentException("Invalid resolve file path: path traversal detected");
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to validate resolve file path: " + e.getMessage(), e);
+                }
                 Properties properties = new RegexProperties();
                 try (FileInputStream fis = new FileInputStream(resolveFile)) {
                     properties.load(fis);
