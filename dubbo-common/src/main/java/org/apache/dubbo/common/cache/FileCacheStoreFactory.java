@@ -86,6 +86,23 @@ public final class FileCacheStoreFactory {
             basePath = basePath.substring(0, basePath.length() - 1);
         }
 
+        // Validate basePath to prevent path traversal
+        try {
+            String userHome = System.getProperty("user.home");
+            File baseDir = new File(basePath);
+            String canonicalBasePath = baseDir.getCanonicalPath();
+            String canonicalUserHome = new File(userHome).getCanonicalPath();
+            
+            if (!canonicalBasePath.startsWith(canonicalUserHome)) {
+                throw new IllegalArgumentException("Cache base path must be within user home directory");
+            }
+            basePath = canonicalBasePath;
+        } catch (IOException e) {
+            logger.error(COMMON_CACHE_PATH_INVALID, "invalid cache path", "", 
+                "Cache base path cannot be resolved: ", e);
+            throw new RuntimeException("Cache base path cannot be resolved: " + basePath, e);
+        }
+
         File candidate = new File(basePath);
         Path path = candidate.toPath();
 
