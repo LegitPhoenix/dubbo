@@ -312,6 +312,15 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 }
             }
             if (resolveFile != null && resolveFile.length() > 0) {
+                try {
+                    String allowedBase = new File(System.getProperty("user.home")).getCanonicalPath();
+                    String canonicalResolveFile = new File(resolveFile).getCanonicalPath();
+                    if (!canonicalResolveFile.startsWith(allowedBase + File.separator) && !canonicalResolveFile.equals(allowedBase)) {
+                        throw new IllegalArgumentException("Resolve file path is outside allowed directory: " + resolveFile);
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to validate resolve file path: " + resolveFile, e);
+                }
                 Properties properties = new RegexProperties();
                 try (FileInputStream fis = new FileInputStream(resolveFile)) {
                     properties.load(fis);
